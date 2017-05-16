@@ -1,29 +1,29 @@
 Object.assign(tus.defaultOptions, {
-  endpoint: "/files",
+  endpoint: 'http://localhost:3000/files/',
   retryDelays: [0, 1000, 3000, 6000, 10000],
 });
 
-document.querySelectorAll("input[type=file]").forEach(function(fileInput) {
-  fileInput.addEventListener("change", function() {
+document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
+  fileInput.addEventListener('change', function() {
     for (var i = 0; i < fileInput.files.length; i++) {
       var file = fileInput.files[i],
-          progressBar = document.querySelector(".progress").cloneNode(true);
+          progressBar = document.querySelector('.progress').cloneNode(true);
 
       fileInput.parentNode.insertBefore(progressBar, fileInput);
 
       var upload = new tus.Upload(file, {
         chunkSize: 0.5*1024*1024,
         metadata: {
-          "filename":     file.name, // for "Content-Type"
-          "content_type": file.type, // for "Content-Disposition"
+          'filename':     file.name, // for 'Content-Type'
+          'content_type': file.type, // for 'Content-Disposition'
         },
       });
 
       upload.options.onProgress = function(bytesSent, bytesTotal) {
         var progress = parseInt(bytesSent / bytesTotal * 100, 10);
         var percentage = progress.toString() + '%';
-        progressBar.querySelector(".progress-bar").style = "width: " + percentage;
-        progressBar.querySelector(".progress-bar").innerHTML = percentage;
+        progressBar.querySelector('.progress-bar').style = 'width: ' + percentage;
+        progressBar.querySelector('.progress-bar').innerHTML = percentage;
       };
 
       upload.options.onSuccess = function(result) {
@@ -32,7 +32,7 @@ document.querySelectorAll("input[type=file]").forEach(function(fileInput) {
         // custruct uploaded file data in the Shrine attachment format
         var fileData = {
           id: upload.url,
-          storage: "cache",
+          storage: 'cache',
           metadata: {
             filename:  file.name.match(/[^\/\\]+$/)[0], // IE returns full path
             size:      file.size,
@@ -41,10 +41,10 @@ document.querySelectorAll("input[type=file]").forEach(function(fileInput) {
         };
 
         // assign file data to the hidden field so that it's submitted to the app
-        var hiddenInput = fileInput.parentNode.querySelector("input[type=hidden]");
+        var hiddenInput = fileInput.parentNode.querySelector('input[type=hidden]');
         hiddenInput.value = JSON.stringify(fileData);
 
-        urlElement = document.createElement("p");
+        urlElement = document.createElement('p');
         urlElement.innerHTML = upload.url;
         fileInput.parentNode.insertBefore(urlElement, fileInput.nextSibling);
       };
@@ -63,6 +63,6 @@ document.querySelectorAll("input[type=file]").forEach(function(fileInput) {
     };
 
     // remove selected files
-    fileInput.value = "";
+    fileInput.value = '';
   });
 });

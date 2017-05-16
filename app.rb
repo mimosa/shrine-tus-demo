@@ -1,7 +1,7 @@
-require "roda"
-require "tilt/erb"
+# frozen_string_literal: true
 
-require "./models/movie"
+require 'roda'
+require './models/movie'
 
 class ShrineTusDemo < Roda
   plugin :public
@@ -9,7 +9,7 @@ class ShrineTusDemo < Roda
   plugin :render
   plugin :partials
 
-  plugin :assets, js: "app.js", css: "app.css"
+  plugin :assets, js: 'app.js', css: 'app.css'
 
   use Rack::MethodOverride
   plugin :all_verbs
@@ -21,40 +21,55 @@ class ShrineTusDemo < Roda
     r.assets # serve dynamic assets
 
     r.root do
-      r.redirect "/movies"
+      r.redirect '/movies'
     end
 
-    r.on "movies" do
+    r.post 'write' do
+      if r.env['CONTENT_TYPE'] == 'application/json'
+        params ||= MultiJson.load(r.env['rack.input'].read, symbolize_keys: true)
+      end
+      puts params
+      puts '_' * 88 + r.env['HTTP_HOOK_NAME']
+
+      if params[:MetaData][:content_type] =~ %r{^video}
+        '0'
+      else
+        '1'
+      end
+    end
+
+    r.on 'movies' do
       r.get true do
         @movies = Movie.all
-        view("movies/index")
+        puts @movies[0].video unless @movies[0].nil?
+        view('movies/index')
       end
 
-      r.get "new" do
+      r.get 'new' do
         @movie = Movie.new
-        view("movies/new")
+        view('movies/new')
       end
 
       r.post true do
         movie = Movie.create(params[:movie])
-        r.redirect "/movies"
+        r.redirect '/movies'
       end
 
-      r.on ":id" do |id|
+      r.on ':id' do |id|
         @movie = Movie[id]
 
-        r.get "edit" do
-          view("movies/edit")
+        r.get 'edit' do
+          view('movies/edit')
         end
 
         r.put do
           @movie.update(params[:movie])
-          r.redirect "/movies"
+          r.redirect '/movies'
         end
 
         r.delete do
           @movie.destroy
-          r.redirect "/movies"
+          r.redirect '/movies'
         end
       end
     end

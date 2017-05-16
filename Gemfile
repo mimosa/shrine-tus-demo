@@ -1,19 +1,18 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-gem "roda", "~> 2.15"
-gem "puma"
-
-gem "tilt"
-
-gem "sequel"
-gem "pg"
-
-gem "shrine"
-gem "tus-server", ">= 0.10.2", "< 1"
-gem "shrine-tus", "~> 0.1"
-gem "shrine-url", "~> 0.3"
-gem "aws-sdk", "~> 2.1"
-gem "dotenv"
-gem "sucker_punch"
-
-gem "pry"
+gem 'aws-sdk'
+gem 'dotenv'
+gem 'foreman'
+gem 'mini_magick'
+gem 'oj'
+gem 'pg'
+gem 'pry'
+gem 'puma'
+gem 'roda', '~> 2.15'
+gem 'sequel'
+gem 'shrine'
+gem 'shrine-tus'
+gem 'shrine-url'
+gem 'streamio-ffmpeg'
+gem 'sucker_punch'
+gem 'tilt', require: 'tilt/erb'

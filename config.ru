@@ -1,8 +1,7 @@
-require "./app"
-require "tus/server"
+# frozen_string_literal: true
 
-map "/files" do
-  run Tus::Server
-end
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('./Gemfile', __dir__)
+require 'bundler/setup' # Set up gems listed in the Gemfile.
+require './app'
 
 run ShrineTusDemo
