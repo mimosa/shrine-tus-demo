@@ -17,14 +17,14 @@ s3_options = {
   region:            ENV.fetch('S3_REGION') { 'us-east-1' },
   bucket: ENV.fetch('AWS_REGION') { 'testbucket' },
   upload_options: {
-    acl: ENV.fetch('AWS_PERMISSION') { 'public-read' }
-  }
+    acl: ENV.fetch('AWS_PERMISSION') { 'public-read' },
+  },
 }
 
 Shrine.storages = {
   cache: Shrine::Storage::S3.new(s3_options), # not used for tus
   store: Shrine::Storage::S3.new(s3_options),
-  tus:   Shrine::Storage::Tus.new(downloader: :down)
+  tus:   Shrine::Storage::Tus.new(downloader: :down),
 }
 
 Shrine.plugin :sequel

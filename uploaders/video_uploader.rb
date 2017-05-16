@@ -22,7 +22,7 @@ class VideoUploader < Shrine
         fps:       movie.frame_rate,
         width:     movie.width,
         height:    movie.height,
-        mime_type: 'video/mp4'
+        mime_type: 'video/mp4',
       }
     when '.jpg'
       image = MiniMagick::Image.open(io.path)
@@ -30,7 +30,7 @@ class VideoUploader < Shrine
       {
         width:     image[:width],
         height:    image[:height],
-        mime_type: image[:mime_type]
+        mime_type: image[:mime_type],
       }
     end
   end
@@ -50,8 +50,8 @@ class VideoUploader < Shrine
         video_bitrate: 1300,
         video_max_bitrate: 500,
         audio_bitrate: 32,
-        audio_sample_rate: 22050,
-        resolution: '400x400'
+        audio_sample_rate: '22050',
+        resolution: '400x400',
       }
 
       movie.transcode(video.path, options, preserve_aspect_ratio: :width)
@@ -63,7 +63,7 @@ class VideoUploader < Shrine
 
       {
         original: video,
-        thumb: screenshot
+        thumb: screenshot,
       }
     end
   end

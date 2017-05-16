@@ -16,7 +16,7 @@ class ShrineTusDemo < Roda
 
   plugin :indifferent_params
 
-  route do |r|
+  route do |r| # rubocop:disable Metrics/BlockLength
     r.public # serve static assets
     r.assets # serve dynamic assets
 
@@ -38,7 +38,7 @@ class ShrineTusDemo < Roda
       end
     end
 
-    r.on 'movies' do
+    r.on 'movies' do # rubocop:disable Metrics/BlockLength
       r.get true do
         @movies = Movie.all
         puts @movies[0].video unless @movies[0].nil?
@@ -51,7 +51,7 @@ class ShrineTusDemo < Roda
       end
 
       r.post true do
-        movie = Movie.create(params[:movie])
+        _movie = Movie.create(params[:movie])
         r.redirect '/movies'
       end
 
