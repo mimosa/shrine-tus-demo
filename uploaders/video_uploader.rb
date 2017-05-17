@@ -46,7 +46,7 @@ class VideoUploader < Shrine
 
       options = {
         video_codec: 'libx264',
-        audio_codec: 'libmp3lame',
+        audio_codec: 'libfdk_aac',
         video_bitrate: 1300,
         video_max_bitrate: 500,
         audio_bitrate: 32,

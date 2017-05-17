@@ -14,8 +14,8 @@ s3_options = {
   access_key_id:     ENV.fetch('AWS_ACCESS_KEY_ID') { 'Q3AM3UQ867SPQQA43P2F' },
   secret_access_key: ENV.fetch('AWS_SECRET_ACCESS_KEY') { 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG' },
   force_path_style:  true,
-  region:            ENV.fetch('S3_REGION') { 'us-east-1' },
-  bucket: ENV.fetch('AWS_REGION') { 'testbucket' },
+  region:            ENV.fetch('AWS_REGION') { 'us-east-1' },
+  bucket: ENV.fetch('S3_BUCKET') { 'testbucket' },
   upload_options: {
     acl: ENV.fetch('AWS_PERMISSION') { 'public-read' },
   },

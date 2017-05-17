@@ -12,7 +12,7 @@ document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
       fileInput.parentNode.insertBefore(progressBar, fileInput);
 
       var upload = new tus.Upload(file, {
-        chunkSize: 0.5*1024*1024,
+        chunkSize: 2*1024*1024,
         metadata: {
           'filename':     file.name, // for 'Content-Type'
           'content_type': file.type, // for 'Content-Disposition'
