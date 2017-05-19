@@ -5,15 +5,10 @@ require './models/movie'
 
 class ShrineTusDemo < Roda
   plugin :public
-
   plugin :render
   plugin :partials
-
   plugin :assets, js: 'app.js', css: 'app.css'
-
-  use Rack::MethodOverride
   plugin :all_verbs
-
   plugin :indifferent_params
 
   route do |r| # rubocop:disable Metrics/BlockLength

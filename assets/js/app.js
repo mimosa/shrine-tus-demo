@@ -66,3 +66,9 @@ document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
     fileInput.value = '';
   });
 });
+
+MessageBus.start();
+MessageBus.callbackInterval = 500;
+MessageBus.subscribe('/movies', function(data){
+  console.log(data);
+});
