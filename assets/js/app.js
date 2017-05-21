@@ -70,5 +70,7 @@ document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
 MessageBus.start();
 MessageBus.callbackInterval = 500;
 MessageBus.subscribe('/movies', function(data){
-  console.log(data);
+  $('p#movie-' + data.id).html(
+    $('<video controls></video>').attr(data)
+  );
 });

@@ -3,6 +3,7 @@
 require './config/shrine'
 require 'mini_magick'
 require 'streamio-ffmpeg'
+require './jobs/message_bus_job'
 
 class VideoUploader < Shrine
   storages[:cache] = storages[:tus]
@@ -11,6 +12,7 @@ class VideoUploader < Shrine
   plugin :processing
   plugin :versions   # enable Shrine to handle a hash of files
   plugin :delete_raw # delete processed files after uploading
+  plugin :hooks
 
   add_metadata do |io, _context|
     case File.extname(io.path)
@@ -46,7 +48,7 @@ class VideoUploader < Shrine
 
       options = {
         video_codec: 'libx264',
-        audio_codec: 'libfdk_aac',
+        audio_codec: 'aac',
         video_bitrate: 1300,
         video_max_bitrate: 500,
         audio_bitrate: 32,
@@ -65,7 +67,24 @@ class VideoUploader < Shrine
         original: video,
         thumb: screenshot,
       }
-    end
+    end 
+  end
+
+  def around_upload(_io, context)
+    result = super
+
+    data = {
+      id:     context[:record].id,
+      src:    result[:original].url,
+      poster: result[:thumb].url,
+      type:   result[:original].mime_type,
+      width:  result[:original].metadata['width'],
+      height: result[:original].metadata['height'],
+    }
+
+    MessageBusJob.perform_async('/movies', data)
+
+    result
   end
 
   private

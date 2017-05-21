@@ -1,6 +1,6 @@
 <h2><%= movie.name %></h2>
 
-<p>
+<p id='movie-<%= movie.id %>'>
   <% if movie.video.is_a?(Hash) %>
     <video 
       type='<%= movie.video[:original].mime_type %>'

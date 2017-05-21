@@ -8,10 +8,4 @@ Sequel::Model.plugin :dirty
 
 class Movie < Sequel::Model
   include VideoUploader::Attachment.new(:video)
-
-  def before_save
-    super
-
-    MessageBus.publish '/channel', video.to_json
-  end
 end
