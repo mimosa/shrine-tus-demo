@@ -67,10 +67,34 @@ document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
   });
 });
 
-MessageBus.start();
-MessageBus.callbackInterval = 500;
-MessageBus.subscribe('/movies', function(data){
-  $('p#movie-' + data.id).html(
-    $('<video controls></video>').attr(data)
-  );
+window.App || (window.App = {});
+
+$(document).ready(function() {
+  App.templates || (App.templates = {
+    video: $('#video-template').html(),
+    movie: $('#movie-template').html()
+  });
+
+  Handlebars.registerPartial('videoTemplate', App.templates.video);
+
+  App.compilers || (App.compilers = {
+    movie: Handlebars.compile(App.templates.movie),
+    video: Handlebars.compile(App.templates.video)
+  });
+
+  var moviesEl = $('ul#movies');
+
+  if (moviesEl.length) {}
+    MessageBus.start();
+    MessageBus.callbackInterval = 500;
+    MessageBus.subscribe('/movies', function(data) {
+      var movieEl = $('#movie-' + data.id + '>.panel-body');
+
+      if (movieEl.length) {
+        movieEl.html(App.compilers.video(data));
+      }else{
+        moviesEl.append(App.compilers.movie(data));
+      }
+    });
+  }
 });

@@ -1,21 +1,25 @@
-<h2><%= movie.name %></h2>
-
-<p id='movie-<%= movie.id %>'>
-  <% if movie.video.is_a?(Hash) %>
-    <video 
-      type='<%= movie.video[:original].mime_type %>'
-      src='<%= movie.video_url(:original) %>'
-      poster='<%= movie.video_url(:thumb) %>'
-      width='<%= movie.video[:original].metadata['width'] %>'
-      height='<%= movie.video[:original].metadata['height'] %>'
-      controls></video>
-  <% else %>
-    No video attached
-  <% end %>
-</p>
-
-<a href='/movies/<%= movie.id %>/edit' class='btn btn-warning'>Edit</a>
-<form action='/movies/<%= movie.id %>' method='post' style='display: inline;'>
-  <input type='hidden' name='_method' value='delete'>
-  <button type='submit' class='btn btn-danger'>Delete</button>
-</form>
+<div id='movie-<%= movie.id %>' class='panel panel-default'>
+  <div class='panel-heading'>
+    <h3 class='panel-title'><%= movie.name %></h3>
+  </div>
+  <div class='panel-body'>
+    <% if movie.video.is_a?(Hash) %>
+      <video 
+        type='<%= movie.video[:original].mime_type %>'
+        src='<%= movie.video_url(:original) %>'
+        poster='<%= movie.video_url(:thumb) %>'
+        width='<%= movie.video[:original].metadata['width'] %>'
+        height='<%= movie.video[:original].metadata['height'] %>'
+        controls />
+    <% else %>
+      <div class='processor'></div>
+    <% end %>
+  </div>
+  <div class='panel-footer'>
+    <a href='/movies/<%= movie.id %>/edit' class='btn btn-warning'>Edit</a>
+    <form action='/movies/<%= movie.id %>' method='post' style='display: inline;'>
+      <input type='hidden' name='_method' value='delete'>
+      <button type='submit' class='btn btn-danger'>Delete</button>
+    </form>
+  </div>
+</div>

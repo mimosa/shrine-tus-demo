@@ -36,7 +36,6 @@ class ShrineTusDemo < Roda
     r.on 'movies' do # rubocop:disable Metrics/BlockLength
       r.get true do
         @movies = Movie.all
-        puts @movies[0].video unless @movies[0].nil?
         view('movies/index')
       end
 

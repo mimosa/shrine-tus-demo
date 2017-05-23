@@ -67,7 +67,7 @@ class VideoUploader < Shrine
         original: video,
         thumb: screenshot,
       }
-    end 
+    end
   end
 
   def around_upload(_io, context)
@@ -75,6 +75,7 @@ class VideoUploader < Shrine
 
     data = {
       id:     context[:record].id,
+      name:   context[:record].name,
       src:    result[:original].url,
       poster: result[:thumb].url,
       type:   result[:original].mime_type,
