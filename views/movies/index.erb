@@ -10,20 +10,3 @@
     </li>
   <% end %>
 </ul>
-
-<script id='movie-template' type='text/x-handlebars-template'>
-  <li class='item-wrapper'>
-    <div class='item'>
-      <div id='movie-{{id}}' class='panel panel-default'>
-        <div class='panel-heading'>
-          <h3 class='panel-title'>{{name}}</h3>
-        </div>
-        <div class='panel-body'>{{> videoTemplate }}</div>
-      </div>
-    </div>
-  </li>
-</script>
-
-<script id='video-template' type='text/x-handlebars-template'>
-  <video type='{{type}}' src='{{src}}' poster='{{poster}}' width='{{width}}' height='{{height}}' controls />
-</script>

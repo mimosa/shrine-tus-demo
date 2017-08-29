@@ -6,13 +6,11 @@ require 'streamio-ffmpeg'
 require './jobs/message_bus_job'
 
 class VideoUploader < Shrine
-  storages[:cache] = storages[:tus]
-
   plugin :add_metadata
-  plugin :processing
-  plugin :versions   # enable Shrine to handle a hash of files
   plugin :delete_raw # delete processed files after uploading
   plugin :hooks
+  plugin :processing
+  plugin :versions   # enable Shrine to handle a hash of files
 
   add_metadata do |io, _context|
     case File.extname(io.path)
@@ -70,7 +68,7 @@ class VideoUploader < Shrine
     end
   end
 
-  def around_upload(_io, context)
+  def around_store(_io, context)
     result = super
 
     data = {

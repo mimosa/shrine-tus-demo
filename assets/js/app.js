@@ -3,15 +3,15 @@ Object.assign(tus.defaultOptions, {
   retryDelays: [0, 1000, 3000, 6000, 10000],
 });
 
-document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
-  fileInput.addEventListener('change', function() {
+document.querySelectorAll('input[type=file]').forEach(fileInput => {
+  fileInput.addEventListener('change', () => {
     for (var i = 0; i < fileInput.files.length; i++) {
       var file = fileInput.files[i],
           progressBar = document.querySelector('.progress').cloneNode(true);
 
       fileInput.parentNode.insertBefore(progressBar, fileInput);
 
-      var upload = new tus.Upload(file, {
+      const upload = new tus.Upload(file, {
         chunkSize: 2*1024*1024,
         metadata: {
           'filename':     file.name, // for 'Content-Type'
@@ -19,18 +19,18 @@ document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
         },
       });
 
-      upload.options.onProgress = function(bytesSent, bytesTotal) {
-        var progress = parseInt(bytesSent / bytesTotal * 100, 10);
-        var percentage = progress.toString() + '%';
+      upload.options.onProgress = (bytesSent, bytesTotal) => {
+        const progress = parseInt(bytesSent / bytesTotal * 100, 10);
+        const percentage = progress.toString() + '%';
         progressBar.querySelector('.progress-bar').style = 'width: ' + percentage;
         progressBar.querySelector('.progress-bar').innerHTML = percentage;
       };
 
-      upload.options.onSuccess = function(result) {
+      upload.options.onSuccess = result => {
         fileInput.parentNode.removeChild(progressBar);
 
         // custruct uploaded file data in the Shrine attachment format
-        var fileData = {
+        const fileData = {
           id: upload.url,
           storage: 'cache',
           metadata: {
@@ -49,12 +49,13 @@ document.querySelectorAll('input[type=file]').forEach(function(fileInput) {
         fileInput.parentNode.insertBefore(urlElement, fileInput.nextSibling);
       };
 
-      upload.options.onError = function(error) {
+      upload.options.onError = error => {
         if (error.originalRequest.status == 0) { // no internet connection
-          setTimeout(function() { upload.start() }, 5000);
-        }
-        else {
-          alert(error);
+          setTimeout(() => { 
+            upload.start();
+          }, 5000);
+        } else {
+          console.error(error);
         }
       };
 
@@ -82,13 +83,13 @@ $(document).ready(function() {
     video: Handlebars.compile(App.templates.video)
   });
 
-  var moviesEl = $('ul#movies');
+  const moviesEl = $('ul#movies');
 
-  if (moviesEl.length) {}
+  if (moviesEl.length) {
     MessageBus.start();
     MessageBus.callbackInterval = 500;
-    MessageBus.subscribe('/movies', function(data) {
-      var movieEl = $('#movie-' + data.id + '>.panel-body');
+    MessageBus.subscribe('/movies', data => {
+      const movieEl = $('#movie-' + data.id + '>.panel-body');
 
       if (movieEl.length) {
         movieEl.html(App.compilers.video(data));
@@ -96,5 +97,5 @@ $(document).ready(function() {
         moviesEl.append(App.compilers.movie(data));
       }
     });
-  }
+  };
 });
