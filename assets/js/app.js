@@ -1,6 +1,6 @@
 Object.assign(tus.defaultOptions, {
   endpoint: 'http://localhost:3000/files/',
-  retryDelays: [0, 1000, 3000, 6000, 10000],
+  retryDelays: [0, 1000, 3000, 6000, 9000],
 });
 
 document.querySelectorAll('input[type=file]').forEach(fileInput => {

@@ -1,17 +1,10 @@
 # frozen_string_literal: true
 
-require './config/shrine'
 require 'mini_magick'
 require 'streamio-ffmpeg'
 require './jobs/message_bus_job'
 
-class VideoUploader < Shrine
-  plugin :add_metadata
-  plugin :delete_raw # delete processed files after uploading
-  plugin :hooks
-  plugin :processing
-  plugin :versions   # enable Shrine to handle a hash of files
-
+class VideoUploader < ApplicationUploader
   add_metadata do |io, _context|
     case File.extname(io.path)
     when '.mp4'
@@ -24,7 +17,7 @@ class VideoUploader < Shrine
         height:    movie.height,
         mime_type: 'video/mp4',
       }
-    when '.jpg'
+    when '.jpg', '.png', '.jpeg'
       image = MiniMagick::Image.open(io.path)
 
       {
@@ -61,7 +54,7 @@ class VideoUploader < Shrine
       movie = FFMPEG::Movie.new(video.path)
       movie.screenshot(screenshot.path, seek_time: 5, custom: %w[-an])
 
-      {
+      { # versions
         original: video,
         thumb: screenshot,
       }
@@ -89,10 +82,16 @@ class VideoUploader < Shrine
   private
 
   def generate_location(io, context)
-    type  = context[:record].class.name.downcase if context[:record]
-    style = context[:version] == :video ? 'videos' : 'screenshots' if context[:version]
     name  = super # the default unique identifier
+    type  = context[:record].class.name.downcase
+    style =
+      case context[:version]
+      when :original
+        'video'
+      when :thumb
+        'screenshot'
+      end
 
-    [type, style, name].compact.join('/')
+    [type, name[0..-5], "#{style}#{name[-4..-1]}"].compact.join('/')
   end
 end

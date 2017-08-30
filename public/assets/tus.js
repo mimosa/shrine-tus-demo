@@ -22,13 +22,24 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.newRequest = newRequest;
-/* global window */
+exports.resolveUrl = resolveUrl;
+
+var _resolveUrl = _dereq_("resolve-url");
+
+var _resolveUrl2 = _interopRequireDefault(_resolveUrl);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function newRequest() {
   return new window.XMLHttpRequest();
+} /* global window */
+
+
+function resolveUrl(origin, link) {
+  return (0, _resolveUrl2.default)(origin, link);
 }
 
-},{}],3:[function(_dereq_,module,exports){
+},{"resolve-url":10}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -87,12 +98,16 @@ exports.removeItem = removeItem;
 var hasStorage = false;
 try {
   hasStorage = "localStorage" in window;
-  // Attempt to access localStorage
-  localStorage.length;
+
+  // Attempt to store and read entries from the local storage to detect Private
+  // Mode on Safari on iOS (see #49)
+  var key = "tusSupport";
+  localStorage.setItem(key, localStorage.getItem(key));
 } catch (e) {
   // If we try to access localStorage inside a sandboxed iframe, a SecurityError
-  // is thrown.
-  if (e.code === e.SECURITY_ERR) {
+  // is thrown. When in private mode on iOS Safari, a QuotaExceededError is
+  // thrown (see #49)
+  if (e.code === e.SECURITY_ERR || e.code === e.QUOTA_EXCEEDED_ERR) {
     hasStorage = false;
   } else {
     throw e;
@@ -122,6 +137,49 @@ function removeItem(key) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var DetailedError = function (_Error) {
+  _inherits(DetailedError, _Error);
+
+  function DetailedError(error) {
+    var causingErr = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+    var xhr = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+
+    _classCallCheck(this, DetailedError);
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DetailedError).call(this, error.message));
+
+    _this.originalRequest = xhr;
+    _this.causingError = causingErr;
+
+    var message = error.message;
+    if (causingErr != null) {
+      message += ", caused by " + causingErr.toString();
+    }
+    if (xhr != null) {
+      message += ", originated from request (response code: " + xhr.status + ", response text: " + xhr.responseText + ")";
+    }
+    _this.message = message;
+    return _this;
+  }
+
+  return DetailedError;
+}(Error);
+
+exports.default = DetailedError;
+
+},{}],6:[function(_dereq_,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.default = fingerprint;
 /**
  * Generate a fingerprint for a file which will be used the store the endpoint
@@ -133,7 +191,7 @@ function fingerprint(file) {
   return ["tus", file.name, file.type, file.size, file.lastModified].join("-");
 }
 
-},{}],6:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var _upload = _dereq_("./upload");
@@ -171,7 +229,7 @@ module.exports = {
   defaultOptions: defaultOptions
 };
 
-},{"./node/storage":4,"./upload":7}],7:[function(_dereq_,module,exports){
+},{"./node/storage":4,"./upload":8}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /* global window */
@@ -188,6 +246,10 @@ Object.defineProperty(exports, "__esModule", {
 var _fingerprint = _dereq_("./fingerprint");
 
 var _fingerprint2 = _interopRequireDefault(_fingerprint);
+
+var _error = _dereq_("./error");
+
+var _error2 = _interopRequireDefault(_error);
 
 var _extend = _dereq_("extend");
 
@@ -224,7 +286,8 @@ var defaultOptions = {
   withCredentials: false,
   uploadUrl: null,
   uploadSize: null,
-  overridePatchMethod: false
+  overridePatchMethod: false,
+  retryDelays: null
 };
 
 var Upload = function () {
@@ -258,11 +321,22 @@ var Upload = function () {
     // with a unified interface for getting its size and slice chunks from its
     // content allowing us to easily handle Files, Blobs, Buffers and Streams.
     this._source = null;
+
+    // The current count of attempts which have been made. Null indicates none.
+    this._retryAttempt = 0;
+
+    // The timeout's ID which is used to delay the next retry
+    this._retryTimeout = null;
+
+    // The offset of the remote upload before the latest attempt was started.
+    this._offsetBeforeRetry = 0;
   }
 
   _createClass(Upload, [{
     key: "start",
     value: function start() {
+      var _this = this;
+
       var file = this.file;
 
       if (!file) {
@@ -298,6 +372,66 @@ var Upload = function () {
         this._size = size;
       }
 
+      var retryDelays = this.options.retryDelays;
+      if (retryDelays != null) {
+        if (Object.prototype.toString.call(retryDelays) !== "[object Array]") {
+          throw new Error("tus: the `retryDelays` option must either be an array or null");
+        } else {
+          (function () {
+            var errorCallback = _this.options.onError;
+            _this.options.onError = function (err) {
+              // Restore the original error callback which may have been set.
+              _this.options.onError = errorCallback;
+
+              // We will reset the attempt counter if
+              // - we were already able to connect to the server (offset != null) and
+              // - we were able to upload a small chunk of data to the server
+              var shouldResetDelays = _this._offset != null && _this._offset > _this._offsetBeforeRetry;
+              if (shouldResetDelays) {
+                _this._retryAttempt = 0;
+              }
+
+              var isOnline = true;
+              if (typeof window !== "undefined" && "navigator" in window && window.navigator.onLine === false) {
+                isOnline = false;
+              }
+
+              // We only attempt a retry if
+              // - we didn't exceed the maxium number of retries, yet, and
+              // - this error was caused by a request or it's response and
+              // - the error is not a client error (status 4xx) and
+              // - the browser does not indicate that we are offline
+              var shouldRetry = _this._retryAttempt < retryDelays.length && err.originalRequest != null && !inStatusCategory(err.originalRequest.status, 400) && isOnline;
+
+              if (!shouldRetry) {
+                _this._emitError(err);
+                return;
+              }
+
+              var delay = retryDelays[_this._retryAttempt++];
+
+              _this._offsetBeforeRetry = _this._offset;
+              _this.options.uploadUrl = _this.url;
+
+              _this._retryTimeout = setTimeout(function () {
+                _this.start();
+              }, delay);
+            };
+          })();
+        }
+      }
+
+      // Reset the aborted flag when the upload is started or else the
+      // _startUpload will stop before sending a request if the upload has been
+      // aborted previously.
+      this._aborted = false;
+
+      // The upload had been started previously and we should reuse this URL.
+      if (this.url != null) {
+        this._resumeUpload();
+        return;
+      }
+
       // A URL has manually been specified, so we try to resume
       if (this.options.uploadUrl != null) {
         this.url = this.options.uploadUrl;
@@ -328,12 +462,16 @@ var Upload = function () {
         this._source.close();
         this._aborted = true;
       }
+
+      if (this._retryTimeout != null) {
+        clearTimeout(this._retryTimeout);
+        this._retryTimeout = null;
+      }
     }
   }, {
     key: "_emitXhrError",
-    value: function _emitXhrError(xhr, err) {
-      err.originalRequest = xhr;
-      this._emitError(err);
+    value: function _emitXhrError(xhr, err, causingErr) {
+      this._emitError(new _error2.default(err, causingErr, xhr));
     }
   }, {
     key: "_emitError",
@@ -395,6 +533,8 @@ var Upload = function () {
   }, {
     key: "_setupXHR",
     value: function _setupXHR(xhr) {
+      this._xhr = xhr;
+
       xhr.setRequestHeader("Tus-Resumable", "1.0.0");
       var headers = this.options.headers;
 
@@ -416,29 +556,29 @@ var Upload = function () {
   }, {
     key: "_createUpload",
     value: function _createUpload() {
-      var _this = this;
+      var _this2 = this;
 
       var xhr = (0, _request.newRequest)();
       xhr.open("POST", this.options.endpoint, true);
 
       xhr.onload = function () {
-        if (!(xhr.status >= 200 && xhr.status < 300)) {
-          _this._emitXhrError(xhr, new Error("tus: unexpected response while creating upload"));
+        if (!inStatusCategory(xhr.status, 200)) {
+          _this2._emitXhrError(xhr, new Error("tus: unexpected response while creating upload"));
           return;
         }
 
-        _this.url = xhr.getResponseHeader("Location");
+        _this2.url = (0, _request.resolveUrl)(_this2.options.endpoint, xhr.getResponseHeader("Location"));
 
-        if (_this.options.resume) {
-          Storage.setItem(_this._fingerprint, _this.url);
+        if (_this2.options.resume) {
+          Storage.setItem(_this2._fingerprint, _this2.url);
         }
 
-        _this._offset = 0;
-        _this._startUpload();
+        _this2._offset = 0;
+        _this2._startUpload();
       };
 
-      xhr.onerror = function () {
-        _this._emitXhrError(xhr, new Error("tus: failed to create upload"));
+      xhr.onerror = function (err) {
+        _this2._emitXhrError(xhr, new Error("tus: failed to create upload"), err);
       };
 
       this._setupXHR(xhr);
@@ -464,51 +604,61 @@ var Upload = function () {
   }, {
     key: "_resumeUpload",
     value: function _resumeUpload() {
-      var _this2 = this;
+      var _this3 = this;
 
       var xhr = (0, _request.newRequest)();
       xhr.open("HEAD", this.url, true);
 
       xhr.onload = function () {
-        if (!(xhr.status >= 200 && xhr.status < 300)) {
-          if (_this2.options.resume) {
+        if (!inStatusCategory(xhr.status, 200)) {
+          if (_this3.options.resume && inStatusCategory(xhr.status, 400)) {
             // Remove stored fingerprint and corresponding endpoint,
-            // since the file can not be found
-            Storage.removeItem(_this2._fingerprint);
+            // on client errors since the file can not be found
+            Storage.removeItem(_this3._fingerprint);
+          }
+
+          // If the upload is locked (indicated by the 423 Locked status code), we
+          // emit an error instead of directly starting a new upload. This way the
+          // retry logic can catch the error and will retry the upload. An upload
+          // is usually locked for a short period of time and will be available
+          // afterwards.
+          if (xhr.status === 423) {
+            _this3._emitXhrError(xhr, new Error("tus: upload is currently locked; retry later"));
+            return;
           }
 
           // Try to create a new upload
-          _this2.url = null;
-          _this2._createUpload();
+          _this3.url = null;
+          _this3._createUpload();
           return;
         }
 
         var offset = parseInt(xhr.getResponseHeader("Upload-Offset"), 10);
         if (isNaN(offset)) {
-          _this2._emitXhrError(xhr, new Error("tus: invalid or missing offset value"));
+          _this3._emitXhrError(xhr, new Error("tus: invalid or missing offset value"));
           return;
         }
 
         var length = parseInt(xhr.getResponseHeader("Upload-Length"), 10);
         if (isNaN(length)) {
-          _this2._emitXhrError(xhr, new Error("tus: invalid or missing length value"));
+          _this3._emitXhrError(xhr, new Error("tus: invalid or missing length value"));
           return;
         }
 
         // Upload has already been completed and we do not need to send additional
         // data to the server
         if (offset === length) {
-          _this2._emitProgress(length, length);
-          _this2._emitSuccess();
+          _this3._emitProgress(length, length);
+          _this3._emitSuccess();
           return;
         }
 
-        _this2._offset = offset;
-        _this2._startUpload();
+        _this3._offset = offset;
+        _this3._startUpload();
       };
 
-      xhr.onerror = function () {
-        _this2._emitXhrError(xhr, new Error("tus: failed to resume upload"));
+      xhr.onerror = function (err) {
+        _this3._emitXhrError(xhr, new Error("tus: failed to resume upload"), err);
       };
 
       this._setupXHR(xhr);
@@ -526,9 +676,16 @@ var Upload = function () {
   }, {
     key: "_startUpload",
     value: function _startUpload() {
-      var _this3 = this;
+      var _this4 = this;
 
-      var xhr = this._xhr = (0, _request.newRequest)();
+      // If the upload has been aborted, we will not send the next PATCH request.
+      // This is important if the abort method was called during a callback, such
+      // as onChunkComplete or onProgress.
+      if (this._aborted) {
+        return;
+      }
+
+      var xhr = (0, _request.newRequest)();
 
       // Some browser and servers may not support the PATCH method. For those
       // cases, you can tell tus-js-client to use a POST request with the
@@ -541,39 +698,39 @@ var Upload = function () {
       }
 
       xhr.onload = function () {
-        if (!(xhr.status >= 200 && xhr.status < 300)) {
-          _this3._emitXhrError(xhr, new Error("tus: unexpected response while uploading chunk"));
+        if (!inStatusCategory(xhr.status, 200)) {
+          _this4._emitXhrError(xhr, new Error("tus: unexpected response while uploading chunk"));
           return;
         }
 
         var offset = parseInt(xhr.getResponseHeader("Upload-Offset"), 10);
         if (isNaN(offset)) {
-          _this3._emitXhrError(xhr, new Error("tus: invalid or missing offset value"));
+          _this4._emitXhrError(xhr, new Error("tus: invalid or missing offset value"));
           return;
         }
 
-        _this3._emitProgress(offset, _this3._size);
-        _this3._emitChunkComplete(offset - _this3._offset, offset, _this3._size);
+        _this4._emitProgress(offset, _this4._size);
+        _this4._emitChunkComplete(offset - _this4._offset, offset, _this4._size);
 
-        _this3._offset = offset;
+        _this4._offset = offset;
 
-        if (offset == _this3._size) {
+        if (offset == _this4._size) {
           // Yay, finally done :)
-          _this3._emitSuccess();
-          _this3._source.close();
+          _this4._emitSuccess();
+          _this4._source.close();
           return;
         }
 
-        _this3._startUpload();
+        _this4._startUpload();
       };
 
-      xhr.onerror = function () {
+      xhr.onerror = function (err) {
         // Don't emit an error if the upload was aborted manually
-        if (_this3._aborted) {
+        if (_this4._aborted) {
           return;
         }
 
-        _this3._emitXhrError(xhr, new Error("tus: failed to upload chunk at offset " + _this3._offset));
+        _this4._emitXhrError(xhr, new Error("tus: failed to upload chunk at offset " + _this4._offset), err);
       };
 
       // Test support for progress events before attaching an event listener
@@ -583,7 +740,7 @@ var Upload = function () {
             return;
           }
 
-          _this3._emitProgress(start + e.loaded, _this3._size);
+          _this4._emitProgress(start + e.loaded, _this4._size);
         };
       }
 
@@ -623,98 +780,157 @@ function encodeMetadata(metadata) {
   return encoded.join(",");
 }
 
+/**
+ * Checks whether a given status is in the range of the expected category.
+ * For example, only a status between 200 and 299 will satisfy the category 200.
+ *
+ * @api private
+ */
+function inStatusCategory(status, category) {
+  return status >= category && status < category + 100;
+}
+
 Upload.defaultOptions = defaultOptions;
 
 exports.default = Upload;
 
-},{"./fingerprint":5,"./node/base64":1,"./node/request":2,"./node/source":3,"./node/storage":4,"extend":8}],8:[function(_dereq_,module,exports){
+},{"./error":5,"./fingerprint":6,"./node/base64":1,"./node/request":2,"./node/source":3,"./node/storage":4,"extend":9}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
 
 var isArray = function isArray(arr) {
-	if (typeof Array.isArray === 'function') {
-		return Array.isArray(arr);
-	}
+  if (typeof Array.isArray === 'function') {
+    return Array.isArray(arr);
+  }
 
-	return toStr.call(arr) === '[object Array]';
+  return toStr.call(arr) === '[object Array]';
 };
 
 var isPlainObject = function isPlainObject(obj) {
-	if (!obj || toStr.call(obj) !== '[object Object]') {
-		return false;
-	}
+  if (!obj || toStr.call(obj) !== '[object Object]') {
+    return false;
+  }
 
-	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
-	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
-	// Not own constructor property must be Object
-	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
-		return false;
-	}
+  var hasOwnConstructor = hasOwn.call(obj, 'constructor');
+  var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
+  // Not own constructor property must be Object
+  if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
+    return false;
+  }
 
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-	var key;
-	for (key in obj) {/**/}
+  // Own properties are enumerated firstly, so to speed up,
+  // if last one is own, then all properties are own.
+  var key;
+  for (key in obj) {/**/}
 
-	return typeof key === 'undefined' || hasOwn.call(obj, key);
+  return typeof key === 'undefined' || hasOwn.call(obj, key);
 };
 
 module.exports = function extend() {
-	var options, name, src, copy, copyIsArray, clone,
-		target = arguments[0],
-		i = 1,
-		length = arguments.length,
-		deep = false;
+  var options, name, src, copy, copyIsArray, clone,
+    target = arguments[0],
+    i = 1,
+    length = arguments.length,
+    deep = false;
 
-	// Handle a deep copy situation
-	if (typeof target === 'boolean') {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	} else if ((typeof target !== 'object' && typeof target !== 'function') || target == null) {
-		target = {};
-	}
+  // Handle a deep copy situation
+  if (typeof target === 'boolean') {
+    deep = target;
+    target = arguments[1] || {};
+    // skip the boolean and the target
+    i = 2;
+  } else if ((typeof target !== 'object' && typeof target !== 'function') || target == null) {
+    target = {};
+  }
 
-	for (; i < length; ++i) {
-		options = arguments[i];
-		// Only deal with non-null/undefined values
-		if (options != null) {
-			// Extend the base object
-			for (name in options) {
-				src = target[name];
-				copy = options[name];
+  for (; i < length; ++i) {
+    options = arguments[i];
+    // Only deal with non-null/undefined values
+    if (options != null) {
+      // Extend the base object
+      for (name in options) {
+        src = target[name];
+        copy = options[name];
 
-				// Prevent never-ending loop
-				if (target !== copy) {
-					// Recurse if we're merging plain objects or arrays
-					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
-						if (copyIsArray) {
-							copyIsArray = false;
-							clone = src && isArray(src) ? src : [];
-						} else {
-							clone = src && isPlainObject(src) ? src : {};
-						}
+        // Prevent never-ending loop
+        if (target !== copy) {
+          // Recurse if we're merging plain objects or arrays
+          if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+            if (copyIsArray) {
+              copyIsArray = false;
+              clone = src && isArray(src) ? src : [];
+            } else {
+              clone = src && isPlainObject(src) ? src : {};
+            }
 
-						// Never move original objects, clone them
-						target[name] = extend(deep, clone, copy);
+            // Never move original objects, clone them
+            target[name] = extend(deep, clone, copy);
 
-					// Don't bring in undefined values
-					} else if (typeof copy !== 'undefined') {
-						target[name] = copy;
-					}
-				}
-			}
-		}
-	}
+          // Don't bring in undefined values
+          } else if (typeof copy !== 'undefined') {
+            target[name] = copy;
+          }
+        }
+      }
+    }
+  }
 
-	// Return the modified object
-	return target;
+  // Return the modified object
+  return target;
 };
 
 
-},{}]},{},[6])(6)
+},{}],10:[function(_dereq_,module,exports){
+// Copyright 2014 Simon Lydell
+// X11 (“MIT”) Licensed. (See LICENSE.)
+
+void (function(root, factory) {
+  if (typeof define === "function" && define.amd) {
+    define(factory)
+  } else if (typeof exports === "object") {
+    module.exports = factory()
+  } else {
+    root.resolveUrl = factory()
+  }
+}(this, function() {
+
+  function resolveUrl(/* ...urls */) {
+    var numUrls = arguments.length
+
+    if (numUrls === 0) {
+      throw new Error("resolveUrl requires at least one argument; got none.")
+    }
+
+    var base = document.createElement("base")
+    base.href = arguments[0]
+
+    if (numUrls === 1) {
+      return base.href
+    }
+
+    var head = document.getElementsByTagName("head")[0]
+    head.insertBefore(base, head.firstChild)
+
+    var a = document.createElement("a")
+    var resolved
+
+    for (var index = 1; index < numUrls; index++) {
+      a.href = arguments[index]
+      resolved = a.href
+      base.href = resolved
+    }
+
+    head.removeChild(base)
+
+    return resolved
+  }
+
+  return resolveUrl
+
+}));
+
+},{}]},{},[7])(7)
 });
 //# sourceMappingURL=tus.js.map

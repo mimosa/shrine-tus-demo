@@ -1,17 +1,12 @@
 <html>
   <head>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js'></script>
-    <script src='/assets/tus.js'></script>
-    <script src='/assets/message-bus.js'></script>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css' media='screen' rel='stylesheet'>
+    <link href='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css' media='screen' rel='stylesheet'>
     <%= assets(:css) %>
   </head>
   <body>
     <div class='container'>
       <%= yield %>
     </div>
-    <%= assets(:js) %>
     <script id='movie-template' type='text/x-handlebars-template'>
       <li class='item-wrapper'>
         <div class='item'>
@@ -24,9 +19,13 @@
         </div>
       </li>
     </script>
-
     <script id='video-template' type='text/x-handlebars-template'>
       <video type='{{type}}' src='{{src}}' poster='{{poster}}' width='{{width}}' height='{{height}}' controls />
     </script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js'></script>
+    <script src='/assets/tus.js'></script>
+    <script src='/assets/message-bus.js'></script>
+    <%= assets(:js) %>
   </body>
 </html>
