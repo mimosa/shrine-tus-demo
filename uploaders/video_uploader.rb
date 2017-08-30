@@ -7,7 +7,7 @@ require './jobs/message_bus_job'
 class VideoUploader < ApplicationUploader
   add_metadata do |io, _context|
     case File.extname(io.path)
-    when '.mp4'
+    when '.mp4', '.3gp', '.ogv', '.webm'
       movie = FFMPEG::Movie.new(io.path)
 
       {
@@ -16,43 +16,35 @@ class VideoUploader < ApplicationUploader
         width:     movie.width,
         height:    movie.height,
         mime_type: 'video/mp4',
+        label:     'video',
       }
-    when '.jpg', '.png', '.jpeg'
+    when '.jpg', '.png', '.jpeg', '.gif'
       image = MiniMagick::Image.open(io.path)
+      label = image.frames.size > 1 ? 'video' : 'image'
 
       {
         width:     image[:width],
         height:    image[:height],
         mime_type: image[:mime_type],
+        label:     label,
       }
     end
   end
 
   process(:store) do |io, _context|
+    raw_file = io.download
     case io.mime_type
-    when /video/
-      raw_file   = io.download
+    when /video/, /gif/
+      movie      = FFMPEG::Movie.new(raw_file.path)
       video      = Tempfile.new(['video', '.mp4'], binmode: true)
       screenshot = Tempfile.new(['screenshot', '.jpg'], binmode: true)
-
-      movie = FFMPEG::Movie.new(raw_file.path)
-
-      options = {
-        video_codec: 'libx264',
-        audio_codec: 'aac',
-        video_bitrate: 1300,
-        video_max_bitrate: 500,
-        audio_bitrate: 32,
-        audio_sample_rate: '22050',
-        resolution: '400x400',
-      }
-
+      options    = VIDEO_OPTIONS[:video].merge(
+        io.mime_type.match?(%r{image}) ? { custom: %w[-an -pix_fmt yuv420p] } : VIDEO_OPTIONS[:audio]
+      )
       movie.transcode(video.path, options, preserve_aspect_ratio: :width)
-
       raw_file.delete
-
       movie = FFMPEG::Movie.new(video.path)
-      movie.screenshot(screenshot.path, seek_time: 5, custom: %w[-an])
+      movie.screenshot(screenshot.path, seek_time: movie.duration > 600 ? 120 : movie.duration.to_i, custom: %w[-an])
 
       { # versions
         original: video,
@@ -80,6 +72,21 @@ class VideoUploader < ApplicationUploader
   end
 
   private
+
+  VIDEO_OPTIONS =
+    {
+      video: {
+        resolution: '400x400',
+        video_bitrate: 1300,
+        video_codec: 'libx264',
+        video_max_bitrate: 500,
+      },
+      audio: {
+        audio_bitrate: 32,
+        audio_codec: 'aac',
+        audio_sample_rate: '22050',
+      },
+    }.freeze
 
   def generate_location(io, context)
     name  = super # the default unique identifier

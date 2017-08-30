@@ -14,7 +14,7 @@
     <label for="movie-video">Video</label>
     <p><a href="<%= movie.video_url %>"><%= movie.video_url(public: true) %></a></p>
     <input type="hidden" name="movie[video]" value="<%= movie.cached_video_data %>">
-    <input type="file" name="movie[video]" id="movie-video">
+    <input type="file" name="movie[video]" accept="image/gif,video/*" id="movie-video">
   </div>
   <button type="submit" class="btn btn-primary">Submit</button>
 </form>
