@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'roda'
+require 'byebug'
 require './models/movie'
 
 class ShrineTusDemo < Roda
