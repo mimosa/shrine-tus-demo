@@ -4,10 +4,18 @@ require 'mini_magick'
 require 'streamio-ffmpeg'
 require './jobs/message_bus_job'
 
+MiniMagick.configure do |c|
+  c.cli = :graphicsmagick
+  c.shell_api = 'posix-spawn'
+  c.timeout = 5
+  c.validate_on_create = false
+  c.validate_on_write = false
+end
+
 class VideoUploader < ApplicationUploader
-  add_metadata do |io, _context|
+  add_metadata do |io, context|
     case File.extname(io.path)
-    when '.mp4', '.3gp', '.ogv', '.webm'
+    when '.mp4'
       movie = FFMPEG::Movie.new(io.path)
 
       {
@@ -16,46 +24,44 @@ class VideoUploader < ApplicationUploader
         width:     movie.width,
         height:    movie.height,
         mime_type: 'video/mp4',
-        label:     'video',
       }
-    when '.jpg', '.png', '.jpeg', '.gif'
+    when '.jpg'
       image = MiniMagick::Image.open(io.path)
-      label = image.frames.size > 1 ? 'video' : 'image'
 
       {
         width:     image[:width],
         height:    image[:height],
-        mime_type: image[:mime_type],
-        label:     label,
+        mime_type: 'image/jpeg',
       }
     end
   end
 
-  process(:store) do |io, _context|
+  process(:store) do |io, context|
+    puts context
+    puts '_' * 88 + 'process'
     raw_file = io.download
+    versions = {}
+
     case io.mime_type
     when /video/, /gif/
-      movie      = FFMPEG::Movie.new(raw_file.path)
-      video      = Tempfile.new(['video', '.mp4'], binmode: true)
-      screenshot = Tempfile.new(['screenshot', '.jpg'], binmode: true)
-      options    = VIDEO_OPTIONS[:video].merge(
-        io.mime_type.match?(%r{image}) ? { custom: %w[-an -pix_fmt yuv420p] } : VIDEO_OPTIONS[:audio]
-      )
-      movie.transcode(video.path, options, preserve_aspect_ratio: :width)
-      raw_file.delete
-      movie = FFMPEG::Movie.new(video.path)
-      movie.screenshot(screenshot.path, seek_time: movie.duration > 600 ? 120 : movie.duration.to_i, custom: %w[-an])
+      versions[:original] = transcode_processing(raw_file, io.mime_type, true)
+      versions[:thumb]    = screenshot_processing(versions[:original])
+    when /image/
+      image = MiniMagick::Image.open(raw_file.path)
+      image.format 'jpg'
 
       { # versions
-        original: video,
-        thumb: screenshot,
+        original: original,
+        thumb: thumb,
       }
     end
+
+    versions.assert_valid_keys(:original, :thumb)
+    versions
   end
 
   def around_store(_io, context)
     result = super
-
     data = {
       id:     context[:record].id,
       name:   context[:record].name,
@@ -100,5 +106,23 @@ class VideoUploader < ApplicationUploader
       end
 
     [type, name[0..-5], "#{style}#{name[-4..-1]}"].compact.join('/')
+  end
+
+  def transcode_processing(raw_file, mime_type, unlink = false)
+    movie   = FFMPEG::Movie.new(raw_file.path)
+    video   = Tempfile.new(['video', '.mp4'], binmode: true)
+    options = VIDEO_OPTIONS[:video].merge(
+      mime_type.match?(%r{image}) ? { custom: %w[-an -pix_fmt yuv420p] } : VIDEO_OPTIONS[:audio]
+    )
+    movie.transcode(video.path, options, preserve_aspect_ratio: :width)
+    raw_file.delete if unlink
+    video
+  end
+
+  def screenshot_processing(raw_file)
+    movie      = FFMPEG::Movie.new(raw_file.path)
+    screenshot = Tempfile.new(['screenshot', '.jpg'], binmode: true)
+    movie.screenshot(screenshot.path, seek_time: movie.duration > 600 ? 120 : movie.duration.to_i, custom: %w[-an])
+    screenshot
   end
 end
