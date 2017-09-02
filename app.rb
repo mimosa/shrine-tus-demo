@@ -24,8 +24,6 @@ class ShrineTusDemo < Roda
       if r.env['CONTENT_TYPE'] == 'application/json'
         params ||= MultiJson.load(r.env['rack.input'].read, symbolize_keys: true)
       end
-      puts params
-      puts '_' * 88 + r.env['HTTP_HOOK_NAME']
 
       if params[:MetaData][:content_type] =~ %r{^video}
         '0'
