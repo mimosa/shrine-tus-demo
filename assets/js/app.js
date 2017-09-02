@@ -1,5 +1,5 @@
 Object.assign(tus.defaultOptions, {
-  endpoint: '/files',
+  endpoint: '/files/',
   retryDelays: [0, 1000, 3000, 6000, 9000],
 });
 
