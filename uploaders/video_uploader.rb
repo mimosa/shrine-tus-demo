@@ -5,7 +5,6 @@ require 'streamio-ffmpeg'
 require './jobs/message_bus_job'
 
 MiniMagick.configure do |c|
-  c.cli = :graphicsmagick
   c.shell_api = 'posix-spawn'
   c.timeout = 5
   c.validate_on_create = false
