@@ -21,7 +21,7 @@ s3_options = {
 }
 
 Shrine.storages = {
-  cache: Shrine::Storage::Tus.new(downloader: :wget),
+  cache: Shrine::Storage::Tus.new,
   store: Shrine::Storage::S3.new(s3_options),
 }
 
