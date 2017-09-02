@@ -9,14 +9,22 @@
 threads_count = ENV.fetch('RAILS_MAX_THREADS') { 5 }.to_i
 threads threads_count, threads_count
 
-# Specifies the `port` that Puma will listen on to receive requests, default is 3000.
-#
-port        ENV.fetch('PUMA_PORT') { 3000 }
+rack_env = ENV.fetch('RACK_ENV') { 'development' }
 
+if rack_env == 'production'
+  # Bind the server to "url". "tcp://", "unix://" and "ssl://" are the only
+  # accepted protocols.
+  #
+  bind 'unix:///var/run/puma.sock'
+  daemonize true
+else
+  # Specifies the `port` that Puma will listen on to receive requests, default is 3000.
+  #
+  port     ENV.fetch('PUMA_PORT') { 3000 }
+end
 # Specifies the `environment` that Puma will run in.
 #
-environment ENV.fetch('RACK_ENV') { 'development' }
-
+environment rack_env
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together
 # the concurrency of the application would be max `threads` * `workers`.
