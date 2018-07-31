@@ -36,8 +36,6 @@ class VideoUploader < ApplicationUploader
   end
 
   process(:store) do |io, context|
-    puts context
-    puts '_' * 88 + 'process'
     raw_file = io.download
     versions = {}
 

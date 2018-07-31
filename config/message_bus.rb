@@ -12,3 +12,8 @@ MessageBus.configure(
   failover_reconnect_timeout: 20,
   reconnect_attempts: 1
 )
+
+# define a site_id lookup method
+MessageBus.configure(is_admin_lookup: proc do
+  true
+end)
