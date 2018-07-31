@@ -4,9 +4,6 @@ Style/PerlBackrefs:
 Style/ClassAndModuleChildren:
   Enabled: false
 
-Metrics/BlockNesting:
-  Max: 2
-
 Metrics/LineLength:
   AllowURI: true
   Enabled: false
@@ -27,9 +24,6 @@ Metrics/ClassLength:
 
 Metrics/CyclomaticComplexity:
   Max: 15
-
-Metrics/MethodLength:
-  Max: 55
 
 Metrics/ModuleLength:
   CountComments: false
@@ -79,6 +73,4 @@ AllCops:
   Exclude:
   - 'assets/**/*'
   - 'views/**/*'
-  - 'public/**/*'
-
   - 'public/**/*'

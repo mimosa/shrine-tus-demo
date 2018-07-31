@@ -8,5 +8,7 @@ require './app'
 
 use Rack::MethodOverride
 use MessageBus::Rack::Middleware
+# serve tus files through frontend server
+use Rack::Sendfile
 
 run ShrineTusDemo

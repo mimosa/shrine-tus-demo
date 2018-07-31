@@ -1,75 +1,52 @@
-Object.assign(tus.defaultOptions, {
-  endpoint: '/files/',
-  retryDelays: [0, 1000, 3000, 6000, 9000],
-});
+// This code uses:
+//
+// * babel-polyfill (https://babeljs.io/docs/usage/polyfill/)
+// * tus-js-client (https://github.com/tus/tus-js-client)
+// * uppy (https://uppy.io)
 
 document.querySelectorAll('input[type=file]').forEach(fileInput => {
-  fileInput.addEventListener('change', () => {
-    for (var i = 0; i < fileInput.files.length; i++) {
-      var file = fileInput.files[i],
-          progressBar = document.querySelector('.progress').cloneNode(true);
+  fileInput.style.display = 'none' // uppy will add its own file input
 
-      fileInput.parentNode.insertBefore(progressBar, fileInput);
+  const uppy = Uppy.Core({
+      id: fileInput.id
+    })
+    .use(Uppy.FileInput, {
+      target: fileInput.parentNode,
+    })
+    .use(Uppy.Tus, {
+      endpoint: '//localhost:3000/files/',
+        chunkSize: 5 * 1024 * 1024,
+        retryDelays: [0, 1000, 3000, 6000, 9000],
+    })
+    .use(Uppy.ProgressBar, {
+      target: fileInput.parentNode,
+    });
 
-      const upload = new tus.Upload(file, {
-        metadata: {
-          'filename':     file.name, // for 'Content-Type'
-          'content_type': file.type, // for 'Content-Disposition'
-        },
-      });
+  uppy.run();
 
-      upload.options.onProgress = (bytesSent, bytesTotal) => {
-        const progress = parseInt(bytesSent / bytesTotal * 100, 10);
-        const percentage = progress.toString() + '%';
-        progressBar.querySelector('.progress-bar').style = 'width: ' + percentage;
-        progressBar.querySelector('.progress-bar').innerHTML = percentage;
-      };
+  uppy.on('upload-success', (file, data) => {
+    const uploadedFileData = JSON.stringify({
+      id: data.url,
+      storage: "cache",
+      metadata: {
+        filename: file.name,
+        size: file.size,
+        mime_type: file.type,
+      }
+    })
 
-      upload.options.onSuccess = result => {
-        fileInput.parentNode.removeChild(progressBar);
+    const hiddenInput = document.getElementById(fileInput.dataset.uploadResultElement)
+    hiddenInput.value = uploadedFileData
 
-        // custruct uploaded file data in the Shrine attachment format
-        const fileData = {
-          id: upload.url,
-          storage: 'cache',
-          metadata: {
-            filename:  file.name.match(/[^\/\\]+$/)[0], // IE returns full path
-            size:      file.size,
-            mime_type: file.type,
-          }
-        };
-
-        // assign file data to the hidden field so that it's submitted to the app
-        var hiddenInput = fileInput.parentNode.querySelector('input[type=hidden]');
-        hiddenInput.value = JSON.stringify(fileData);
-
-        urlElement = document.createElement('p');
-        urlElement.innerHTML = upload.url;
-        fileInput.parentNode.insertBefore(urlElement, fileInput.nextSibling);
-      };
-
-      upload.options.onError = error => {
-        if (error.originalRequest.status == 0) { // no internet connection
-          setTimeout(() => { 
-            upload.start();
-          }, 5000);
-        } else {
-          console.error(error);
-        }
-      };
-
-      // start the tus upload
-      upload.start();
-    };
-
-    // remove selected files
-    fileInput.value = '';
-  });
+    const videoLink = document.getElementById(fileInput.dataset.previewElement)
+    videoLink.href = data.url
+    videoLink.innerHTML = data.url
+  })
 });
 
 window.App || (window.App = {});
 
-$(document).ready(function() {
+$(document).ready(() => {
   App.templates || (App.templates = {
     video: $('#video-template').html(),
     movie: $('#movie-template').html()

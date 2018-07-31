@@ -1,0 +1,44 @@
+[tusd] Using './data' as directory storage.
+[tusd] Using 0.00MB as maximum size.
+[tusd] Using localhost:3000 as address to listen.
+[tusd] Using /files/ as the base path.
+[tusd] Using /metrics as the metrics path.
+[tusd] Core: ✓ Terminater: ✓ Finisher: ✗ Locker: ✓ GetReader: ✓ Concater: ✓
+[tusd] Using './data' as directory storage.
+[tusd] Using 0.00MB as maximum size.
+[tusd] Using localhost:3000 as address to listen.
+[tusd] Using /files/ as the base path.
+[tusd] Using /metrics as the metrics path.
+[tusd] Core: ✓ Terminater: ✓ Finisher: ✗ Locker: ✓ GetReader: ✓ Concater: ✓
+[tusd] Using './data' as directory storage.
+[tusd] Using 0.00MB as maximum size.
+[tusd] Using localhost:3000 as address to listen.
+[tusd] Using /files/ as the base path.
+[tusd] Using /metrics as the metrics path.
+[tusd] Core: ✓ Terminater: ✓ Finisher: ✗ Locker: ✓ GetReader: ✓ Concater: ✓
+[tusd] event="RequestIncoming" method="OPTIONS" path="" 
+[tusd] event="ResponseOutgoing" status="200" method="OPTIONS" path="" 
+[tusd] event="RequestIncoming" method="POST" path="" 
+[tusd] event="UploadCreated" id="0ccb14e1ac35ac7a71d258a4adad3c55" size="14822221" url="http://localhost:3000/files/0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ResponseOutgoing" status="201" method="POST" path="" 
+[tusd] event="RequestIncoming" method="OPTIONS" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ResponseOutgoing" status="200" method="OPTIONS" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="RequestIncoming" method="PATCH" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ChunkWriteStart" id="0ccb14e1ac35ac7a71d258a4adad3c55" maxSize="5242880" offset="0" 
+[tusd] event="ChunkWriteComplete" id="0ccb14e1ac35ac7a71d258a4adad3c55" bytesWritten="5242880" 
+[tusd] event="ResponseOutgoing" status="204" method="PATCH" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="RequestIncoming" method="OPTIONS" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ResponseOutgoing" status="200" method="OPTIONS" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="RequestIncoming" method="PATCH" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ChunkWriteStart" id="0ccb14e1ac35ac7a71d258a4adad3c55" maxSize="5242880" offset="5242880" 
+[tusd] event="ChunkWriteComplete" id="0ccb14e1ac35ac7a71d258a4adad3c55" bytesWritten="5242880" 
+[tusd] event="ResponseOutgoing" status="204" method="PATCH" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="RequestIncoming" method="OPTIONS" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ResponseOutgoing" status="200" method="OPTIONS" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="RequestIncoming" method="PATCH" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ChunkWriteStart" id="0ccb14e1ac35ac7a71d258a4adad3c55" maxSize="4336461" offset="10485760" 
+[tusd] event="ChunkWriteComplete" id="0ccb14e1ac35ac7a71d258a4adad3c55" bytesWritten="4336461" 
+[tusd] event="ResponseOutgoing" status="204" method="PATCH" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="UploadFinished" id="0ccb14e1ac35ac7a71d258a4adad3c55" size="14822221" 
+[tusd] event="RequestIncoming" method="GET" path="0ccb14e1ac35ac7a71d258a4adad3c55" 
+[tusd] event="ResponseOutgoing" status="200" method="GET" path="0ccb14e1ac35ac7a71d258a4adad3c55" 

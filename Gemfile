@@ -2,22 +2,33 @@
 
 source 'https://rubygems.org'
 
-gem 'aws-sdk', '~> 2.1'
-gem 'byebug'
-gem 'dotenv'
-gem 'foreman'
-gem 'http_parser.rb'
-gem 'message_bus'
-gem 'mime-types'
-gem 'mini_magick'
-gem 'oj'
+gem 'byebug', '~> 10.0', '>= 10.0.2'
+gem 'dotenv', '~> 2.5'
+gem 'foreman', '~> 0.85.0'
+gem 'puma', '~> 3.12'
+
+gem 'http_parser.rb', '~> 0.6.0'
+gem 'oj', '~> 3.6', '>= 3.6.5'
+gem 'posix-spawn', '~> 0.3.13'
+
+gem 'message_bus', '~> 2.1', '>= 2.1.5'
+gem 'hiredis', '~> 0.6.1'
+gem 'redis', '~> 4.0', '>= 4.0.1', require: ['redis', 'redis/connection/hiredis']
+
+gem 'sequel', '~> 5.10'
 gem 'pg'
-gem 'posix-spawn'
-gem 'puma'
-gem 'roda', '~> 2.15'
-gem 'sequel'
-gem 'shrine-tus'
-gem 'streamio-ffmpeg'
-gem 'sucker_punch'
+
+gem 'shrine', '~> 2.11'
+gem 'shrine-tus', '~> 1.2', '>= 1.2.1'
+gem 'aws-sdk-s3', '~> 1.17'
+
+gem 'mime-types', '~> 3.1'
+gem 'mini_magick', '~> 4.8'
+gem 'streamio-ffmpeg', '~> 3.0', '>= 3.0.2'
+gem 'sucker_punch', '~> 2.0', '>= 2.0.4'
+
 gem 'activesupport'
-gem 'tilt', require: 'tilt/erb'
+
+gem 'roda', '~> 3.10'
+gem 'tilt', '~> 2.0', '>= 2.0.8', require: 'tilt/erb'
+gem 'erubi', '~> 1.7', '>= 1.7.1'

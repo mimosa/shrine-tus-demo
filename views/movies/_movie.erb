@@ -4,7 +4,7 @@
   </div>
   <div class='panel-body'>
     <% if movie.video.is_a?(Hash) %>
-      <video 
+      <video
         type='<%= movie.video[:original].mime_type %>'
         src='<%= movie.video_url(:original) %>'
         poster='<%= movie.video_url(:thumb) %>'
@@ -18,7 +18,7 @@
   <div class='panel-footer'>
     <a href='/movies/<%= movie.id %>/edit' class='btn btn-warning'>Edit</a>
     <form action='/movies/<%= movie.id %>' method='post' style='display: inline;'>
-      <input type='hidden' name='_method' value='delete'>
+      <input type='hidden' name='_method' value='delete' />
       <button type='submit' class='btn btn-danger'>Delete</button>
     </form>
   </div>
