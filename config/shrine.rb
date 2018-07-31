@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './jobs/shrine_job'
+require './workers/shrine_worker'
 require 'dotenv'
 require 'shrine'
 require 'shrine/storage/s3'
@@ -32,9 +32,9 @@ Shrine.plugin :logging
 Shrine.plugin :sequel
 
 Shrine::Attacher.promote do |data|
-  ShrineJob.perform_async(:promote, data)
+  ShrineWorker.perform_async(:promote, data)
 end
 
 Shrine::Attacher.delete do |data|
-  ShrineJob.perform_async(:delete, data)
+  ShrineWorker.perform_async(:delete, data)
 end

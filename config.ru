@@ -8,7 +8,8 @@ require './app'
 
 use Rack::MethodOverride
 use MessageBus::Rack::Middleware
-# serve tus files through frontend server
-use Rack::Sendfile
 
-run ShrineTusDemo
+require './config/sidekiq'
+require 'sidekiq/web'
+
+run Rack::URLMap.new('/sidekiq' => Sidekiq::Web, '/' => ShrineTusDemo)

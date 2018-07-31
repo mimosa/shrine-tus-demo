@@ -25,7 +25,7 @@ gem 'aws-sdk-s3', '~> 1.17'
 gem 'mime-types', '~> 3.1'
 gem 'mini_magick', '~> 4.8'
 gem 'streamio-ffmpeg', '~> 3.0', '>= 3.0.2'
-gem 'sucker_punch', '~> 2.0', '>= 2.0.4'
+gem 'sidekiq', '~> 5.1', '>= 5.1.3'
 
 gem 'activesupport'
 
