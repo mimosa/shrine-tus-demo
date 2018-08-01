@@ -12,4 +12,4 @@ use MessageBus::Rack::Middleware
 require './config/sidekiq'
 require 'sidekiq/web'
 
-run Rack::URLMap.new('/sidekiq' => Sidekiq::Web, '/' => ShrineTusDemo)
+run Rack::URLMap.new('/sidekiq' => Sidekiq::Web, '/' => App)

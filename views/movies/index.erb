@@ -5,7 +5,7 @@
   <% @movies.each do |movie| %>
     <li class='item-wrapper'>
       <div class='item'>
-        <%= partial 'movies/movie', locals: { movie: movie } %>
+        <%= partial(:'movies/movie', locals: { movie: movie }) %>
       </div>
     </li>
   <% end %>

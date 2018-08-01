@@ -8,7 +8,12 @@ document.querySelectorAll('input[type=file]').forEach(fileInput => {
   fileInput.style.display = 'none' // uppy will add its own file input
 
   const uppy = Uppy.Core({
-      id: fileInput.id
+      id: fileInput.id,
+      restrictions: {
+        minNumberOfFiles: 1,
+        maxNumberOfFiles: 9,
+        allowedFileTypes: ['image/gif', 'video/*']
+      }
     })
     .use(Uppy.FileInput, {
       target: fileInput.parentNode,

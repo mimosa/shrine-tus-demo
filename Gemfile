@@ -27,8 +27,6 @@ gem 'mini_magick', '~> 4.8'
 gem 'streamio-ffmpeg', '~> 3.0', '>= 3.0.2'
 gem 'sidekiq', '~> 5.1', '>= 5.1.3'
 
-gem 'activesupport'
-
-gem 'roda', '~> 3.10'
-gem 'tilt', '~> 2.0', '>= 2.0.8', require: 'tilt/erb'
-gem 'erubi', '~> 1.7', '>= 1.7.1'
+gem 'activesupport', '~> 5.1', '>= 5.1.6'
+gem 'sinatra', '~> 2.0', '>= 2.0.3'
+gem 'sinatra-partial', '~> 1.0', '>= 1.0.1'

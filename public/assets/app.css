@@ -2,6 +2,27 @@
   width: 800px;
 }
 
-.video-preview {
-  margin-bottom: 10px;
+.templates {
+  visibility: hidden;
+}
+
+.processor {
+  background: transparent url('/assets/spinner.min.svg') center no-repeat;
+  display: block;
+  width: 400px;
+  height: 400px;
+}
+
+.items-container {
+  list-style: none;
+  padding-left: initial;
+  margin-top: 10px;
+}
+
+.item-wrapper {
+  float: left;
+}
+
+.item-wrapper:last-child { 
+  clear: both;
 }

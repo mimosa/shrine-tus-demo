@@ -1,70 +1,61 @@
 # frozen_string_literal: true
 
-require 'roda'
 require 'byebug'
+require 'sinatra/base'
+require 'sinatra/partial'
 require './models/movie'
 
-class ShrineTusDemo < Roda
-  plugin :public
-  plugin :render
-  plugin :partials
-  plugin :assets, js: 'app.js', css: 'app.css'
-  plugin :all_verbs
-  plugin :indifferent_params
+class App < Sinatra::Base
+  register Sinatra::Partial
+  enable :static, :logging, :partial_underscores
+  set :public_folder, Proc.new { File.join(root, 'public') }
+  set :views, Proc.new { File.join(root, 'views') }
+  set :partial_template_engine, :erb
+  set :run, false
 
-  route do |r| # rubocop:disable Metrics/BlockLength
-    r.public # serve static assets
-    r.assets # serve dynamic assets
+  before do
+    @movie = Movie.find(params[:id]) unless params[:id].blank?
+  end
 
-    r.root do
-      r.redirect '/movies'
+  get '/' do
+    redirect '/movies'
+  end
+
+  get '/movies' do
+    @movies = Movie.all
+    erb :'movies/index'
+  end
+
+  post '/movies' do
+    @movie = Movie.create(params[:movie])
+    redirect '/movies'
+  end
+
+  get '/movies/new' do
+    @movie = Movie.new
+    erb :'movies/new'
+  end
+
+  put '/movies/:id' do
+    @movie.update(params[:movie])
+    redirect '/movies'
+  end
+
+  delete '/movies/:id' do
+    @movie.destroy
+    redirect '/movies'
+  end
+
+  get '/movies/:id/edit' do
+    erb :'movies/edit'
+  end
+
+  post '/write' do
+    puts env
+    puts '_' * 88
+    if env['CONTENT_TYPE'] == 'application/json'
+      params ||= MultiJson.load(env['rack.input'].read, symbolize_keys: true)
     end
-
-    r.post 'write' do
-      if r.env['CONTENT_TYPE'] == 'application/json'
-        params ||= MultiJson.load(r.env['rack.input'].read, symbolize_keys: true)
-      end
-
-      if params[:MetaData][:content_type] =~ %r{^video}
-        '0'
-      else
-        '1'
-      end
-    end
-
-    r.on 'movies' do # rubocop:disable Metrics/BlockLength
-      r.get true do
-        @movies = Movie.all
-        view('movies/index')
-      end
-
-      r.get 'new' do
-        @movie = Movie.new
-        view('movies/new')
-      end
-
-      r.post true do
-        _movie = Movie.create(params[:movie])
-        r.redirect '/movies'
-      end
-
-      r.on ':id' do |id|
-        @movie = Movie[id]
-
-        r.get 'edit' do
-          view('movies/edit')
-        end
-
-        r.put do
-          @movie.update(params[:movie])
-          r.redirect '/movies'
-        end
-
-        r.delete do
-          @movie.destroy
-          r.redirect '/movies'
-        end
-      end
-    end
+    params[:MetaData][:content_type] =~ %r{^video} ? '0' : '1'
   end
 end
