@@ -15,6 +15,10 @@ gem 'message_bus', '~> 2.1', '>= 2.1.5'
 gem 'hiredis', '~> 0.6.1'
 gem 'redis', '~> 4.0', '>= 4.0.1', require: ['redis', 'redis/connection/hiredis']
 
+gem 'anycable', '~> 0.5.1'
+gem 'litecable', '~> 0.5.0'
+gem 'websocket', '~> 1.2', '>= 1.2.8'
+
 gem 'sequel', '~> 5.10'
 gem 'pg'
 
@@ -29,4 +33,5 @@ gem 'sidekiq', '~> 5.1', '>= 5.1.3'
 
 gem 'activesupport', '~> 5.1', '>= 5.1.6'
 gem 'sinatra', '~> 2.0', '>= 2.0.3'
+gem 'sinatra-contrib', '~> 2.0', '>= 2.0.3'
 gem 'sinatra-partial', '~> 1.0', '>= 1.0.1'

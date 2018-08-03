@@ -5,6 +5,7 @@ require 'bundler/setup' # Set up gems listed in the Gemfile.
 require 'active_support'
 require 'active_support/core_ext'
 require './app'
+require './app_cable'
 
 use Rack::MethodOverride
 use MessageBus::Rack::Middleware
@@ -12,4 +13,7 @@ use MessageBus::Rack::Middleware
 require './config/sidekiq'
 require 'sidekiq/web'
 
-run Rack::URLMap.new('/sidekiq' => Sidekiq::Web, '/' => App)
+run Rack::URLMap.new(
+  '/sidekiq' => Sidekiq::Web,
+  '/' => App
+)
