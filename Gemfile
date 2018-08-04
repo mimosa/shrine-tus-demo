@@ -16,7 +16,6 @@ gem 'redis', '~> 4.0', '>= 4.0.1', require: ['redis', 'redis/connection/hiredis'
 
 gem 'anycable', '~> 0.5.1'
 gem 'litecable', '~> 0.5.0'
-gem 'websocket', '~> 1.2', '>= 1.2.8'
 
 gem 'sequel', '~> 5.11'
 gem 'pg'

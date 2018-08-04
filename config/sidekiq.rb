@@ -23,7 +23,7 @@ Sidekiq.configure_server do |config|
 end
 
 Redis.current = Redis.new(
-  url: 'redis://localhost:6380/15',
+  url: ENV.fetch('ANYCABLE_REDIS_URL') { 'redis://mymaster/15' },
   driver: :hiredis, network_timeout: 5,
   failover_reconnect_timeout: 20, reconnect_attempts: 1
 )
