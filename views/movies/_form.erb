@@ -16,7 +16,7 @@
     <input type='file' name='movie[video]' accept='image/gif,video/*' id='movie-video-field' data-upload-result-element='movie-video-upload-result' data-preview-element='movie-video-preview' />
   </div>
   <div class='video-preview'>
-    <a href='<%= movie.video_url %>' id='movie-video-preview'><%= movie.video_url(public: true) %></a>
+    <a href='<%= movie.video_url(:original) %>' id='movie-video-preview'><%= movie.video_url(:original) %></a>
   </div>
   <button type='submit' class='btn btn-primary'>Submit</button>
 </form>

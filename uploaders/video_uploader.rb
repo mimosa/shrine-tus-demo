@@ -2,9 +2,9 @@
 
 require 'mini_magick'
 require 'streamio-ffmpeg'
-require './workers/message_bus_worker'
 require 'active_support'
 require 'active_support/core_ext'
+require './workers/message_bus_worker'
 
 MiniMagick.configure do |c|
   c.shell_api = 'posix-spawn'
@@ -71,7 +71,7 @@ class VideoUploader < ApplicationUploader
       height: result[:original].metadata['height'],
     }
 
-    MessageBusWorker.perform_async('/movies', data)
+    MessageBusWorker.perform_async('notifications', data)
 
     result
   end

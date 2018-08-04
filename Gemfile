@@ -11,7 +11,6 @@ gem 'http_parser.rb', '~> 0.6.0'
 gem 'oj', '~> 3.6', '>= 3.6.5'
 gem 'posix-spawn', '~> 0.3.13'
 
-gem 'message_bus', '~> 2.1', '>= 2.1.5'
 gem 'hiredis', '~> 0.6.1'
 gem 'redis', '~> 4.0', '>= 4.0.1', require: ['redis', 'redis/connection/hiredis']
 
@@ -19,7 +18,7 @@ gem 'anycable', '~> 0.5.1'
 gem 'litecable', '~> 0.5.0'
 gem 'websocket', '~> 1.2', '>= 1.2.8'
 
-gem 'sequel', '~> 5.10'
+gem 'sequel', '~> 5.11'
 gem 'pg'
 
 gem 'shrine', '~> 2.11'

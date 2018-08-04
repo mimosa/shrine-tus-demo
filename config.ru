@@ -8,7 +8,6 @@ require './app'
 require './app_cable'
 
 use Rack::MethodOverride
-use MessageBus::Rack::Middleware
 
 require './config/sidekiq'
 require 'sidekiq/web'

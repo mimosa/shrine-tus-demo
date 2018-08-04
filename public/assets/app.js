@@ -67,15 +67,19 @@ $(document).ready(() => {
   const moviesEl = $('ul#movies');
 
   if (moviesEl.length) {
-    MessageBus.start();
-    MessageBus.callbackInterval = 500;
-    MessageBus.subscribe('/movies', data => {
-      const movieEl = $('#movie-' + data.id + '>.panel-body');
-
-      if (movieEl.length) {
-        movieEl.html(App.compilers.video(data));
-      }else{
-        moviesEl.append(App.compilers.movie(data));
+    App.cable = ActionCable.createConsumer('ws://localhost:9293/cable');
+    App.currentChannel = App.cable.subscriptions.create({
+          channel: 'notifications',
+          id: 'test'
+        }, {
+      received: data => {
+        const movie = data.movie;
+        const movieEl = $('#movie-' + movie.id + '>.panel-body');
+        if (movieEl.length) {
+          movieEl.html(App.compilers.video(movie));
+        }else{
+          moviesEl.append(App.compilers.movie(movie));
+        }
       }
     });
   };
