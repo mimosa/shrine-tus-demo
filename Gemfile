@@ -18,7 +18,7 @@ gem 'anycable', '~> 0.5.1'
 gem 'litecable', '~> 0.5.0'
 
 gem 'sequel', '~> 5.11'
-gem 'pg'
+gem 'pg', '~> 0.21'
 
 gem 'shrine', '~> 2.11'
 gem 'shrine-tus', '~> 1.2', '>= 1.2.1'
@@ -27,7 +27,7 @@ gem 'aws-sdk-s3', '~> 1.17'
 gem 'mime-types', '~> 3.1'
 gem 'mini_magick', '~> 4.8'
 gem 'streamio-ffmpeg', '~> 3.0', '>= 3.0.2'
-gem 'sidekiq', '~> 5.1', '>= 5.1.3'
+gem 'sidekiq', '~> 5.2', '>= 5.2.1'
 
 gem 'activesupport', '~> 5.1', '>= 5.1.6'
 gem 'sinatra', '~> 2.0', '>= 2.0.3'
