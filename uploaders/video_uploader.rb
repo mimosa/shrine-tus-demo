@@ -61,7 +61,7 @@ class VideoUploader < ApplicationUploader
 
   def around_store(_io, context)
     result = super
-    data = {
+    meta = {
       id:     context[:record].id,
       name:   context[:record].name,
       src:    result[:original].url,
@@ -71,7 +71,7 @@ class VideoUploader < ApplicationUploader
       height: result[:original].metadata['height'],
     }
 
-    MessageBusWorker.perform_async('notifications', data)
+    MessageBusWorker.perform_async('notifications', movie: meta)
 
     result
   end

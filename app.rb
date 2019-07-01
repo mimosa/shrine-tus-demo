@@ -18,20 +18,41 @@ class App < Sinatra::Base
 
   helpers Sinatra::RequiredParams
 
+  helpers do
+    def params
+      @params ||= super
+    end
+  end  
+
+  before :method => :post do
+    if request.content_type == 'application/json'
+      params.merge!(
+        MultiJson.load(request.body.read, symbolize_keys: true)
+      )
+    end
+  end
+
   get '/' do
     redirect '/movies'
   end
 
   post '/write' do
-    if env['CONTENT_TYPE'] == 'application/json'
-      params ||= MultiJson.load(env['rack.input'].read, symbolize_keys: true)
-    end
-    params[:MetaData][:content_type] =~ %r{^video} ? '0' : '1'
+    params[:MetaData][:content_type] =~ %r{video|image} ? '0' : '1'
+  end
+
+  post '/publish' do
+    MessageBusWorker.perform_async(
+      params[:channel] ||'notifications',
+      params[:message]
+    )
+
+    'Done'
   end
 
   namespace '/movies' do
     get do
       @movies = Movie.all
+
       erb :'movies/index'
     end
   
@@ -39,6 +60,7 @@ class App < Sinatra::Base
       required_params movie: %i[name video]
     
       @movie = Movie.create(params[:movie])
+
       redirect '/movies'
     end
 
