@@ -50,7 +50,7 @@ preload_app!
 # cannot share connections between processes.
 #
 on_worker_boot do
-  MessageBus.after_fork if defined?(MessageBus)
+  # MessageBus.after_fork if defined?(MessageBus)
 end
 
 # Allow puma to be restarted by `rails restart` command.

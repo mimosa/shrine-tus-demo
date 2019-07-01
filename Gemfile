@@ -17,7 +17,7 @@ gem 'redis', '~> 4.0', '>= 4.0.1', require: ['redis', 'redis/connection/hiredis'
 gem 'anycable', '~> 0.6', '>= 0.6.3'
 gem 'litecable', '~> 0.6', '>= 0.6.0'
 
-gem 'sequel', '~> 5.11'
+gem 'sequel', '~> 5'
 gem 'pg', '~> 0.21'
 
 gem 'shrine', '~> 2', '>= 2.18.0'
@@ -33,3 +33,7 @@ gem 'activesupport', '~> 5.2', '>= 5.2.3'
 gem 'sinatra', '~> 2.0', '>= 2.0.5'
 gem 'sinatra-contrib', '~> 2.0', '>= 2.0.5'
 gem 'sinatra-partial', '~> 1.0', '>= 1.0.1'
+
+# HTTP client
+gem "faraday", "~> 0.15"
+gem "typhoeus", "~> 1.3", require: %w[typhoeus typhoeus/adapters/faraday]
