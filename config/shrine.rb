@@ -8,7 +8,7 @@ require 'shrine/storage/tus'
 
 Dotenv.load
 
-s3_options = {
+s3_store = Shrine::Storage::S3.new(
   access_key_id:     ENV.fetch('AWS_ACCESS_KEY_ID') { 'Q3AM3UQ867SPQQA43P2F' },
   bucket:            ENV.fetch('S3_BUCKET') { 'testbucket' },
   endpoint:          ENV.fetch('S3_ENDPOINT') { 'https://play.minio.io:9000' },
@@ -16,13 +16,13 @@ s3_options = {
   region:            ENV.fetch('AWS_REGION') { 'us-east-1' },
   secret_access_key: ENV.fetch('AWS_SECRET_ACCESS_KEY') { 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG' },
   upload_options: {
-    acl:             ENV.fetch('AWS_PERMISSION') { 'public-read' },
+    acl:             ENV.fetch('AWS_PERMISSION') { 'private' },
   },
-}
+)
 
 Shrine.storages = {
   cache: Shrine::Storage::Tus.new,
-  store: Shrine::Storage::S3.new(s3_options),
+  store: s3_store
 }
 
 Shrine.plugin :backgrounding

@@ -4,9 +4,7 @@ require 'sidekiq'
 
 redis_conn = proc {
   Redis.new(
-    url: 'redis://mymaster/14',
-    sentinels: [{ host: 'localhost', port: 26379 }],
-    role: :master,
+    url: 'redis://localhost:6379/14',
     driver: :hiredis,
     network_timeout: 5,
     failover_reconnect_timeout: 20,
@@ -23,7 +21,7 @@ Sidekiq.configure_server do |config|
 end
 
 Redis.current = Redis.new(
-  url: ENV.fetch('ANYCABLE_REDIS_URL') { 'redis://mymaster/15' },
+  url: ENV.fetch('ANYCABLE_REDIS_URL') { 'redis://localhost:6379/15' },
   driver: :hiredis, network_timeout: 5,
   failover_reconnect_timeout: 20, reconnect_attempts: 1
 )

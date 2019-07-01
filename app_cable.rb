@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './config/lite_cable'
+require 'litecable'
 
 module AppCable
   class Connection < LiteCable::Connection::Base # :nodoc:

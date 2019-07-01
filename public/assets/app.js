@@ -67,7 +67,7 @@ $(document).ready(() => {
   const moviesEl = $('ul#movies');
 
   if (moviesEl.length) {
-    App.cable = ActionCable.createConsumer('ws://localhost:9293/cable');
+    App.cable = ActionCable.createConsumer('ws://localhost:5300/cable');
     App.currentChannel = App.cable.subscriptions.create({
           channel: 'notifications',
           id: 'test'

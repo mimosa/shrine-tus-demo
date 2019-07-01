@@ -121,7 +121,8 @@ class VideoUploader < ApplicationUploader
   def screenshot_processing(raw_file)
     movie      = FFMPEG::Movie.new(raw_file.path)
     screenshot = Tempfile.new(['screenshot', '.jpg'], binmode: true)
-    movie.screenshot(screenshot.path, seek_time: movie.duration > 600 ? 120 : movie.duration.to_i, custom: %w[-an])
+
+    movie.screenshot(screenshot.path, seek_time: Random.rand(movie.duration > 600.0 ? 120.0 : movie.duration).round(1), custom: %w[-an])
     screenshot
   end
 end
