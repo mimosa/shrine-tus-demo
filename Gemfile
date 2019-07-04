@@ -22,7 +22,7 @@ gem 'pg', '~> 0.21'
 
 gem 'shrine', '~> 2', '>= 2.18.0'
 gem 'shrine-tus', '~> 1.2', '>= 1.2.2'
-gem 'aws-sdk-s3', '~> 1.17'
+gem 'aws-sdk-s3', '~> 1', '>= 1.44.0'
 
 gem 'mime-types', '~> 3.1'
 gem 'mini_magick', '~> 4.8'

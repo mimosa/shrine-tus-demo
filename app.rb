@@ -37,7 +37,22 @@ class App < Sinatra::Base
   end
 
   post '/write' do
-    params[:MetaData][:content_type] =~ %r{video|image} ? '0' : '1'
+    case request.env['HTTP_HOOK_NAME']
+    when /pre-create/
+      if params[:MetaData][:filetype] =~ %r{video|image}
+        status 201
+        body '0' 
+      else
+        status 405
+        body '1'
+      end
+    when /post-create/
+      status 201
+      body '0'
+    else
+      status 201
+      body '0'
+    end
   end
 
   post '/publish' do
